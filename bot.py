@@ -561,7 +561,7 @@ async def start_handler(_, message):
     reply_markup = InlineKeyboardMarkup(buttons)
 
     await message.reply_photo(
-        animation="https://files.catbox.moe/7srcby.jpg",
+        photo="https://files.catbox.moe/7srcby.jpg",
         caption=caption,
         parse_mode=ParseMode.MARKDOWN,
         reply_markup=reply_markup
