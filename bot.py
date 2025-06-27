@@ -166,12 +166,12 @@ last_suggestions = {}
 global_playback_count = 0  # Increments on every new playback request
 api_server_counter = 0     # Used to select an API server in round-robin fashion
 api_servers = [
-    "https://py-tgcalls-api-1.onrender.com",
-    "https://py-tgcalls-api-4vju.onrender.com",
-    "http://py-tgcalls-api-yto1.onrender.com",
-    "https://py-tgcalls-api-p44l.onrender.com",
-    "https://py-tgcalls-api-fzk2.onrender.com",
-    "https://py-tgcalls-api-vjd1.onrender.com"
+    "https://py-tgcalls-api-1.onrender.co1m",
+    "https://py-tgcalls-api-4vju.onrender.c1om",
+    "http://py-tgcalls-api-yto1.onrender.co1m",
+    "https://py-tgcalls-api-p44l.onrender.c1om",
+    "https://py-tgcalls-api-fzk2.onrender.co1m",
+    "https://py-tgcalls-api-vjd1.onrender.c1om"
 ]
 chat_api_server = {}
 global_api_index = 0
@@ -1302,7 +1302,7 @@ async def fallback_local_playback(chat_id: int, message: Message, song_info: dic
 
         # Notify fallback
         try:
-            await message.edit(f"ғᴀʟʟɪɴɢ ʙᴀᴄᴋ ᴛᴏ ʟᴏᴄᴀʟ ᴘʟᴀʏʙᴀᴄᴋ ғᴏʀ ⚡ {song_info['title']}...")
+            await message.edit(f"✨ Processing... Please wait, may take up to 20 seconds. 💕")
         except Exception:
             message = await bot.send_message(
                 chat_id,
