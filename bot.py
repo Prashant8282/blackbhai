@@ -96,7 +96,7 @@ call_py = PyTgCalls(assistant)
 
 
 ASSISTANT_USERNAME = "@xyz92329"
-ASSISTANT_CHAT_ID = 7624452928
+ASSISTANT_CHAT_ID = 7970097238
 API_ASSISTANT_USERNAME = "@xyz92329"
 
 # API Endpoints
@@ -944,24 +944,42 @@ def create_frosted_card(
 # ─── Command handlers ────────────────────────────────────────────────────────────────
 
 @bot.on_message(filters.group & filters.regex(r'^/play(?:@\w+)?(?:\s+(?P<query>.+))?$'))
-async def play_handler(_, message: Message):
+async def play_handler(_, message):
     chat_id = message.chat.id
 
     # If replying to an audio/video message, handle local playback
     if message.reply_to_message and (message.reply_to_message.audio or message.reply_to_message.video):
         processing_message = await message.reply("❄️")
 
+        # Ensure bot is in chat
+        if not await is_assistant_in_chat(chat_id):
+            invite_link = await extract_invite_link(bot, chat_id)
+            if invite_link and await invite_assistant(chat_id, invite_link, processing_message):
+                await processing_message.edit("⏳ Assistant is joining... Please wait.")
+                for _ in range(10):
+                    await asyncio.sleep(3)
+                    if await is_assistant_in_chat(chat_id):
+                        break
+                else:
+                    await processing_message.edit(
+                        "❌ Assistant failed to join. Please unban the assistant.\nSupport: @frozensupport1"
+                    )
+                    return
+            else:
+                await processing_message.edit("❌ Please give bot invite-link permission.\nSupport: @frozensupport1")
+                return
+
         # Fetch fresh media reference and download
         orig = message.reply_to_message
-        fresh = await bot.get_messages(orig.chat.id, orig.id)
+        fresh = await assistant.get_messages(orig.chat.id, orig.id)
         media = fresh.video or fresh.audio
         if fresh.audio and getattr(fresh.audio, 'file_size', 0) > 100 * 1024 * 1024:
             await processing_message.edit("❌ Audio file too large. Maximum allowed size is 100MB.")
             return
 
-        await processing_message.edit("⏳ Please wait, downloading audio…")
+        await processing_message.edit("⏳ Please wait, downloading audio...")
         try:
-            file_path = await bot.download_media(media)
+            file_path = await assistant.download_media(media)
         except Exception as e:
             await processing_message.edit(f"❌ Failed to download media: {e}")
             return
@@ -970,11 +988,11 @@ async def play_handler(_, message: Message):
         thumb_path = None
         try:
             thumbs = fresh.video.thumbs if fresh.video else fresh.audio.thumbs
-            thumb_path = await bot.download_media(thumbs[0])
+            thumb_path = await assistant.download_media(thumbs[0])
         except Exception:
             pass
 
-        # Prepare song_info and fallback to local playback
+        # Prepare song_info
         duration = media.duration or 0
         title = getattr(media, 'file_name', 'Untitled')
         song_info = {
@@ -983,9 +1001,28 @@ async def play_handler(_, message: Message):
             'duration': format_time(duration),
             'duration_seconds': duration,
             'requester': message.from_user.first_name,
-            'thumbnail': thumb_path
+            'thumbnail': thumb_path,
+            'file_path': file_path
         }
+
+        # Enqueue for loop/skip support
+        queue = chat_containers.setdefault(chat_id, [])
+        queue.append(song_info)
+
+        # Play immediately
         await fallback_local_playback(chat_id, processing_message, song_info)
+
+        # If there's now more than one track in the queue, show its position & controls
+        if len(queue) > 1:
+            queue_buttons = InlineKeyboardMarkup([
+                [InlineKeyboardButton("⏭ Skip", callback_data="skip"),
+                 InlineKeyboardButton("🗑 Clear", callback_data="clear")]
+            ])
+            await message.reply(
+                f"➕ Added **{title}** to the queue.\n"
+                f"**Queue position:** {len(queue)-1}",
+                reply_markup=queue_buttons
+            )
         return
 
     # Otherwise, process query-based search
@@ -998,24 +1035,24 @@ async def play_handler(_, message: Message):
         pass
 
     # Enforce cooldown
-    now_ts = time.time()
-    if chat_id in chat_last_command and (now_ts - chat_last_command[chat_id]) < COOLDOWN:
-        remaining = int(COOLDOWN - (now_ts - chat_last_command[chat_id]))
+    now = time.time()
+    if chat_id in chat_last_command and (now - chat_last_command[chat_id]) < COOLDOWN:
+        remaining = int(COOLDOWN - (now - chat_last_command[chat_id]))
         if chat_id in chat_pending_commands:
-            await bot.send_message(chat_id, f"⏳ A command is already queued for this chat. Please wait {remaining}s.")
+            await _.send_message(chat_id, f"⏳ A command is already queued for this chat. Please wait {remaining}s.")
         else:
-            cooldown_reply = await bot.send_message(chat_id, f"⏳ On cooldown. Processing in {remaining}s.")
+            cooldown_reply = await _.send_message(chat_id, f"⏳ On cooldown. Processing in {remaining}s.")
             chat_pending_commands[chat_id] = (message, cooldown_reply)
             asyncio.create_task(process_pending_command(chat_id, remaining))
         return
-    chat_last_command[chat_id] = now_ts
+    chat_last_command[chat_id] = now
 
     if not query:
         keyboard = InlineKeyboardMarkup([
             [InlineKeyboardButton("🎵 Play Your Playlist", callback_data="play_playlist"),
              InlineKeyboardButton("🔥 Play Trending Songs", callback_data="play_trending")]
         ])
-        await bot.send_message(
+        await _.send_message(
             chat_id,
             "You did not specify a song. Would you like to play your playlist or trending songs instead?\n\n"
             "Correct usage: /play <song name>\nExample: /play shape of you",
@@ -1027,7 +1064,8 @@ async def play_handler(_, message: Message):
     await process_play_command(message, query)
 
 
-async def process_play_command(message: Message, query: str):
+
+async def process_play_command(message, query):
     chat_id = message.chat.id
     processing_message = await message.reply("❄️")
 
@@ -1036,6 +1074,25 @@ async def process_play_command(message: Message, query: str):
         m = re.search(r"youtu\.be/([^?&]+)", query)
         if m:
             query = f"https://www.youtube.com/watch?v={m.group(1)}"
+
+    # Ensure bot is in chat
+    if not await is_assistant_in_chat(chat_id):
+        invite_link = await extract_invite_link(bot, chat_id)
+        if invite_link and await invite_assistant(chat_id, invite_link, processing_message):
+            await processing_message.edit("⏳ Assistant is joining... Please wait.")
+            for _ in range(10):
+                await asyncio.sleep(3)
+                if await is_assistant_in_chat(chat_id):
+                    await processing_message.edit("✅ Assistant joined! Playing your song...")
+                    break
+            else:
+                await processing_message.edit(
+                    "❌ Assistant failed to join. Please unban the assistant.\nSupport: @frozensupport1"
+                )
+                return
+        else:
+            await processing_message.edit("❌ Please give bot invite‑link permission.\nSupport: @frozensupport1")
+            return
 
     # Perform YouTube search and handle results
     try:
@@ -1054,7 +1111,7 @@ async def process_play_command(message: Message, query: str):
             )
             return
 
-    # Handle playlist vs single video
+    # 3) Handle playlist vs single video
     if isinstance(result, dict) and "playlist" in result:
         playlist_items = result["playlist"]
         if not playlist_items:
@@ -1062,6 +1119,7 @@ async def process_play_command(message: Message, query: str):
             return
 
         chat_containers.setdefault(chat_id, [])
+        # Add all items to queue
         for item in playlist_items:
             secs = isodate.parse_duration(item["duration"]).total_seconds()
             chat_containers[chat_id].append({
@@ -1073,20 +1131,6 @@ async def process_play_command(message: Message, query: str):
                 "thumbnail": item["thumbnail"]
             })
 
-            # Preload cache in background
-            async def preload_playlist_cache(item_url, duration_sec):
-                api_base, _, _ = chat_api_server[chat_id]
-                api_param = "&api=secondary" if duration_sec > 720 else ""
-                try:
-                    async with aiohttp.ClientSession() as session:
-                        await session.get(
-                            f"{api_base}/cache?url={quote(item_url, safe='')}{api_param}"
-                        )
-                except Exception as e:
-                    print(f"[Playlist Cache Error]: {e}")
-
-            asyncio.create_task(preload_playlist_cache(item["link"], secs))
-
         total = len(playlist_items)
         reply_text = (
             f"✨ᴀᴅᴅᴇᴅ ᴛᴏ playlist\n"
@@ -1097,12 +1141,33 @@ async def process_play_command(message: Message, query: str):
             reply_text += f"\n#2 - {playlist_items[1]['title']}"
         await message.reply(reply_text)
 
+        # Preload only the next song for the playlist to avoid flooding API
+        if total > 1:
+            next_item = playlist_items[1]
+            next_secs = isodate.parse_duration(next_item["duration"]).total_seconds()
+            # Schedule caching for second song
+            async def preload_next():
+                api_base, _, _ = chat_api_server[chat_id]
+                api_param = "&api=secondary" if next_secs > 720 else ""
+                try:
+                    async with aiohttp.ClientSession() as session:
+                        await session.get(
+                            f"{api_base}/cache?url={urllib.parse.quote(next_item['link'], safe='')}{api_param}"
+                        )
+                except Exception:
+                    pass
+
+            asyncio.create_task(preload_next())
+
+        # Start the playback task; further caching of subsequent songs
+        # will be triggered inside the playback handler when moving to the next track.
         if len(chat_containers[chat_id]) == total:
             await start_playback_task(chat_id, processing_message)
         else:
             await processing_message.delete()
 
     else:
+        # Single video handling (unchanged)...
         video_url, title, duration_iso, thumb = result
         if not video_url:
             await processing_message.edit(
@@ -1113,7 +1178,7 @@ async def process_play_command(message: Message, query: str):
         secs = isodate.parse_duration(duration_iso).total_seconds()
         if secs > MAX_DURATION_SECONDS:
             await processing_message.edit(
-                "❌ Streams longer than 10 min are not allowed. We are facing some server issues—please try later."
+                "❌ Streams longer than 10 min are not allowed. we are facing some server issues will be fixed"
             )
             return
 
@@ -1124,7 +1189,7 @@ async def process_play_command(message: Message, query: str):
             "title": title,
             "duration": readable,
             "duration_seconds": secs,
-            "requester": message.from_user.first_name if message.from_user else "Unknown",
+            "requester": message.from_user.first_name if message.from_user else 'Unknown',
             "thumbnail": thumb
         })
 
@@ -1132,14 +1197,14 @@ async def process_play_command(message: Message, query: str):
         if len(chat_containers[chat_id]) == 1:
             await start_playback_task(chat_id, processing_message)
         else:
-            # Preload cache in background
+            # Preload cache in background for queued songs with conditional API
             async def preload_cache(item_url, duration_sec):
                 api_base, _, _ = chat_api_server[chat_id]
                 api_param = "&api=secondary" if duration_sec > 720 else ""
                 try:
                     async with aiohttp.ClientSession() as session:
                         await session.get(
-                            f"{api_base}/cache?url={quote(item_url, safe='')}{api_param}"
+                            f"{api_base}/cache?url={urllib.parse.quote(item_url, safe='')}{api_param}"
                         )
                 except Exception as e:
                     print(f"[Cache Preload Error]: {e}")
