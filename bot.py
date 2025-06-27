@@ -538,7 +538,7 @@ async def start_handler(_, message):
     # Caption with bold Unicode font for headings and feature labels
     caption = (
         f"👋 нєу {user_link} 💠, 🥀\n\n"
-        ">🎶 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 𝗧𝗢 𝐼𝑁𝑇𝑅𝑂𝑉𝐸𝑅𝑇 𝗠𝗨𝗦𝗜𝗖! 🎵\n"
+        ">🎶 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 𝗧𝗢 HE4RT_MUSIC_BOT 𝗠𝗨𝗦𝗜𝗖! 🎵\n"
         ">🚀 𝗧𝗢𝗣-𝗡𝗢𝗧𝗖𝗛 24×7 𝗨𝗣𝗧𝗜𝗠𝗘 & 𝗦𝗨𝗣𝗣𝗢𝗥𝗧\n"
         ">🔊 𝗖𝗥𝗬𝗦𝗧𝗔𝗟-𝗖𝗟𝗘𝗔𝗥 𝗔𝗨𝗗𝗜𝗢\n"
         ">🎧 𝗦𝗨𝗣𝗣𝗢𝗥𝗧𝗘𝗗 𝗣𝗟𝗔𝗧𝗙𝗢𝗥𝗠𝗦: YouTube | Spotify | Resso | Apple Music | SoundCloud\n"
@@ -550,11 +550,11 @@ async def start_handler(_, message):
 
     buttons = [
         [
-            InlineKeyboardButton(f"➕ {add_me_text}", url="https://t.me/Introvertmusic2bot?startgroup=true"),
+            InlineKeyboardButton(f"➕ {add_me_text}", url="https://t.me/HE4RT_MUSIC_BOT?startgroup=true"),
             InlineKeyboardButton(f"📢 {updates_text}", url="https://t.me/vibeshiftbots")
         ],
         [
-            InlineKeyboardButton(f"💬 {support_text}", url="https://t.me/+Yi9PjoOHGUsyZDU1"),
+            InlineKeyboardButton(f"💬 {support_text}", url="https://t.me/+3he0mqBFZEczY2Rl"),
             InlineKeyboardButton(f"❓ {help_text}", callback_data="show_help")
         ]
     ]
@@ -593,7 +593,7 @@ async def go_back_callback(_, callback_query):
 
     caption = (
         f"👋 нєу {user_link} 💠, 🥀\n\n"
-        ">🎶 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 𝗧𝗢 𝗙𝗥𝗢𝗭𝗘𝗡 𝗠𝗨𝗦𝗜𝗖! 🎵\n"
+        ">🎶 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 𝗧𝗢 HE4RT_MUSIC_BOT! 🎵\n"
         ">🚀 𝗧𝗢𝗣-𝗡𝗢𝗧𝗖𝗛 24×7 𝗨𝗣𝗧𝗜𝗠𝗘 & 𝗦𝗨𝗣𝗣𝗢𝗥𝗧\n"
         ">🔊 𝗖𝗥𝗬𝗦𝗧𝗔𝗟-𝗖𝗟𝗘𝗔𝗥 𝗔𝗨𝗗𝗜𝗢\n"
         ">🎧 𝗦𝗨𝗣𝗣𝗢𝗥𝗧𝗘𝗗 𝗣𝗟𝗔𝗧𝗙𝗢𝗥𝗠𝗦: YouTube | Spotify | Resso | Apple Music | SoundCloud\n"
@@ -605,11 +605,11 @@ async def go_back_callback(_, callback_query):
 
     buttons = [
         [
-            InlineKeyboardButton(f"➕ {add_me_text}", url="https://t.me/Introvertmusic2bot?startgroup=true"),
+            InlineKeyboardButton(f"➕ {add_me_text}", url="https://t.me/HE4RT_MUSIC_BOT?startgroup=true"),
             InlineKeyboardButton(f"📢 {updates_text}", url="https://t.me/vibeshiftbots")
         ],
         [
-            InlineKeyboardButton(f"💬 {support_text}", url="https://t.me/+Yi9PjoOHGUsyZDU1"),
+            InlineKeyboardButton(f"💬 {support_text}", url="https://t.me/+3he0mqBFZEczY2Rl"),
             InlineKeyboardButton(f"❓ {help_text}", callback_data="show_help")
         ]
     ]
