@@ -538,7 +538,7 @@ async def start_handler(_, message):
     # Caption with bold Unicode font for headings and feature labels
     caption = (
         f"👋 нєу {user_link} 💠, 🥀\n\n"
-        ">🎶 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 𝗧𝗢 𝗙𝗥𝗢𝗭𝗘𝗡 𝗠𝗨𝗦𝗜𝗖! 🎵\n"
+        ">🎶 𝗪𝗘𝗟𝗖𝗢𝗠𝗘 𝗧𝗢 𝐼𝑁𝑇𝑅𝑂𝑉𝐸𝑅𝑇 𝗠𝗨𝗦𝗜𝗖! 🎵\n"
         ">🚀 𝗧𝗢𝗣-𝗡𝗢𝗧𝗖𝗛 24×7 𝗨𝗣𝗧𝗜𝗠𝗘 & 𝗦𝗨𝗣𝗣𝗢𝗥𝗧\n"
         ">🔊 𝗖𝗥𝗬𝗦𝗧𝗔𝗟-𝗖𝗟𝗘𝗔𝗥 𝗔𝗨𝗗𝗜𝗢\n"
         ">🎧 𝗦𝗨𝗣𝗣𝗢𝗥𝗧𝗘𝗗 𝗣𝗟𝗔𝗧𝗙𝗢𝗥𝗠𝗦: YouTube | Spotify | Resso | Apple Music | SoundCloud\n"
@@ -560,7 +560,7 @@ async def start_handler(_, message):
     ]
     reply_markup = InlineKeyboardMarkup(buttons)
 
-    await message.reply_animation(
+    await message.reply_photo(
         animation="https://files.catbox.moe/7srcby.jpg",
         caption=caption,
         parse_mode=ParseMode.MARKDOWN,
