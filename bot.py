@@ -95,9 +95,9 @@ assistant = Client("assistant_account", session_string=ASSISTANT_SESSION)
 call_py = PyTgCalls(assistant)
 
 
-ASSISTANT_USERNAME = "@xyz92329"
+ASSISTANT_USERNAME = "@badboy_cyberblsck"
 ASSISTANT_CHAT_ID = 7970097238
-API_ASSISTANT_USERNAME = "@xyz92329"
+API_ASSISTANT_USERNAME = "@badboy_cyberblsck"
 
 # API Endpoints
 API_URL = os.environ.get("API_URL")
