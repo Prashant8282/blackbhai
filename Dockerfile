@@ -21,5 +21,6 @@ COPY . .
 # (Optional) Expose the port your API listens on
 EXPOSE 8080
 
-# Define the command to run your API (adjust if your entry point is different)
-CMD ["python", "bot.py"]
+# Run both bot.py and bot2.py
+CMD ["bash", "-c", "python bot.py & python bot2.py & wait"]
+
