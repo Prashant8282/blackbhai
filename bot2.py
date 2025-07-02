@@ -3461,7 +3461,7 @@ class WebhookHandler(BaseHTTPRequestHandler):
 
 # ─── Server Bootstrap ─────────────────────────────────────────────────────────
 def run_http_server():
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("POR1T", 8081))
     server = HTTPServer(("", port), WebhookHandler)
     print(f"HTTP server running on port {port}")
     server.serve_forever()
